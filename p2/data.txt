@@ -1,0 +1,50 @@
+TravelDatabase:
+- Map from uniqueID (String) to travel info (SingleTravel), used for saving and loading, and also for searching a specific type
+
+Itinerary implements Travel:
+- LinkedHashMap<String, SingleTravel>: an ordered sequence of travel information that can be added to; Travel fields are calculated using this map
+
+MainDatabase:
+- EnumMap<TravelType, TravelDatabase>: stores each TravelDatabase by a TravelType
+- Map from origin (String) to all travels that originate from that location (Set<SingleTravel>), used for searching itineraries
+
+abstract RegisteredUser implements User:
+- LinkedHashSet<Itinerary>: stores any booked itineraries in order
+
+UserDatabase:
+- Map from email (String) to user (Registered User): stores registered users by email, used to log in
+
+Uploading personal/billing information about clients (.csv):
+
+LastName,FirstNames,Email,Address,CreditCardNumber,ExpiryDate
+(ExpiryDate in YYYY-MM-DD)
+
+Uploading flight information (.csv):
+
+Number,DepartureDateTime,ArrivalDateTime,Airline,Origin,Destination,Price
+(dateTime in YYYY-MM-DD HH:MM; one flight per line)
+
+SAVE DATA: (.sav)
+(This file will be encrypted upon saving; this is the decrypted form)
+All information is in a byte array and is not saved in a String.
+[byte] = 1 byte, [short] = 2 bytes, [int] = 4 bytes, [long] = 8 bytes
+[String] = 2 bytes for length, then the String in byte array format (i.e. UTF)
+
+[HEADER] = un-encrypted data; data needed for decryption (such as IV)
+[byte] = Number of non-empty TravelTypes
+For each TravelType:
+	[byte] = TravelType ordinal
+	[int] = number of SingleTravels in this TravelDatabase
+	For each SingleTravel:
+		[Object] = serialized travel info
+[int] = Number of RegisteredUsers in the UserDatabase
+For each RegisteredUser:
+	[byte] = Privileges ordinal
+	[String] = file format (as above)
+	[String] = encryptedPassword
+	[int] = number of booked itineraries
+	For each booked itinerary:
+		[int] = number of SingleTravels
+		For each SingleTravel:
+			[byte] = TravelType ordinal
+			[String] = travel unique ID
